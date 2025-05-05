@@ -8,8 +8,7 @@ pub fn createConfigFile() {
     // println!("config.json文件已创建，请手动填写cookie");
     // println!("按任意键退出");
     let mut config_json = json::object! {
-        "path" : "~/Downloads",
-        "filetype" : "mp3"
+        "path" : "~/Downloads"
     };
     file.write_all(config_json.to_string().as_bytes()).expect("无法写入文件");
     println!("设置写入默认值：\n转换后输出路径：~/Downloads\n转换后文件格式：mp3");

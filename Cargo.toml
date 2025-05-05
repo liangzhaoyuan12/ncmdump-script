@@ -5,6 +5,8 @@ edition = "2024"
 
 [dependencies]
 json = "=0.12.4"
+native-dialog = "0.9.0"
+include_dir = "0.7"
 
 [package.metadata.scripts]
 run = "cargo run"
