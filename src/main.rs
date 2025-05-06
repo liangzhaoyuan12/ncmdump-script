@@ -74,7 +74,7 @@ fn mainmenu() {
                 file_dump::file_dump(true, ncm_folders);
             },
             "3" => {
-                // 设置
+                setting::setting();
             },
             "4" => {
                 // 退出

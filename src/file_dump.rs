@@ -43,65 +43,51 @@ pub fn file_dump(is_folder:bool, ncm_path:Vec<PathBuf>) {
 }
 #[cfg(all(target_os = "windows" , target_arch = "x86_64"))]
 fn file_dump_sys(safe_choice: u8,ncm_path:Vec<PathBuf> ) {
-    println!("进入windows_x86系统模块");
+    // println!("进入windows_x86系统模块");
     let current_dir = std::env::current_dir().unwrap();
     let mut src_path = PathBuf::from(current_dir);
     src_path.push("lib");
     src_path.push("ncmdump.exe");
-    println!("{:?}", src_path);
-    let (file_folder_arg,safe_args) = get_args(safe_choice,ncm_path_total);
-    println!("{:?}\n{:?}", file_folder_arg,safe_args);
+    // println!("{:?}", src_path);
+    // let (file_folder_arg,safe_args) = get_args(safe_choice,ncm_path_total);
+    // println!("{:?}\n{:?}", file_folder_arg,safe_args);
 // 先file_folder_arg后safe_args
-    println!("进入转换程序");
-    println!("{:?} {:?} {:?}", src_path, file_folder_arg, safe_args);
-
-    let output = process::Command::new(src_path);
-    if IS_FOLDER{
-        let output= output.arg("-d")
-        .arg(ncm_path[0])
-       .arg("-r");
-    }else{
-        for i in ncm_path{
-            let output=output.arg(i);
-        }
-    }
-    let output=output.output()
-    .expect("err");
-    //     .arg(file_folder_arg)
-    //     .arg(safe_args)
-    //     .output()
-    //     .expect("执行转换指令错误");
-    println!("{:?}", output.stdout)
+    // println!("进入转换程序");
+    // println!("{:?} {:?} {:?}", src_path, file_folder_arg, safe_args);
+    dump(src_path, ncm_path,safe_choice).expect("error");
 
 }
 #[cfg(all(target_os = "macos" , target_arch = "aarch64"))]
-fn file_dump_sys(choice: u8,ncm_path_total:&str) {
+fn file_dump_sys(safe_choice: u8,ncm_path:Vec<PathBuf>) {
 
     let current_dir = std::env::current_dir().unwrap();
     let mut src_path = PathBuf::from(current_dir);
     src_path.push("lib");
     src_path.push("ncmdump_mac_arm64");
     unix_add_execute_permission(&src_path).expect("添加unix执行权限错误");
-    
+    dump(src_path, ncm_path,safe_choice).expect("error");
+
 }
 #[cfg(all(target_os = "macos" , target_arch = "x86_64"))]
-fn file_dump_sys(choice: u8,ncm_path_total:&str) {
+fn file_dump_sys(safe_choice: u8,ncm_path:Vec<PathBuf>) {
     
     let current_dir = std::env::current_dir().unwrap();
     let mut src_path = PathBuf::from(current_dir);
     src_path.push("lib");
     src_path.push("ncmdump_mac_x64");
     unix_add_execute_permission(&src_path).expect("添加unix执行权限错误");
+    dump(src_path, ncm_path,safe_choice).expect("error");
 
 }
 #[cfg(all(target_os = "linux" , target_arch = "x86_64"))]
-fn file_dump_sys(choice: u8,ncm_path_total:&str) {
+fn file_dump_sys(safe_choice: u8,ncm_path:Vec<PathBuf>) {
     
     let current_dir = std::env::current_dir().unwrap();
     let mut src_path = PathBuf::from(current_dir);
     src_path.push("lib");
     src_path.push("ncmdump_linux_x64");
     unix_add_execute_permission(&src_path).expect("添加unix执行权限错误");
+    dump(src_path, ncm_path,safe_choice).expect("error");
 
 }
 #[cfg(all(target_os = "linux", target_os = "macos"))]
@@ -117,21 +103,49 @@ fn unix_add_execute_permission(absolute_path: &PathBuf) ->Result<(),Box<dyn std:
     }
     return Ok(());
 }
-// return (file_folder_arg,safe_args);
-fn get_args(safe_choice: u8,ncm_path_total:&str) ->(String,String) {
-    let mut safe_args = String::new();
-    // 设定保存路径
-    if safe_choice == 1 {
-        safe_args = format!("-o {}",getConfigMap().get("path").unwrap());
-    }
-    else {
-        safe_args = format!("");
-    }
-    let mut file_folder_arg = String::new();
+// // return (file_folder_arg,safe_args);
+// fn get_args(safe_choice: u8,ncm_path_total:&str) ->(String,String) {
+//     let mut safe_args = String::new();
+//     // 设定保存路径
+//     if safe_choice == 1 {
+//         safe_args = format!("-o {}",getConfigMap().get("path").unwrap());
+//     }
+//     else {
+//         safe_args = format!("");
+//     }
+//     let mut file_folder_arg = String::new();
+//     if unsafe {IS_FOLDER}{
+//         file_folder_arg = format!("-d {} -r",ncm_path_total); // 转换ncm文件夹 开启递归,转换整个文件夹内的所有文件
+//     }else {
+//         file_folder_arg = format!("{}",ncm_path_total); // 转换ncm文件
+//     }
+//     return (file_folder_arg,safe_args);
+// }
+fn dump(src_path :PathBuf,ncm_path:Vec<PathBuf>,safe_choice: u8) ->Result<(),Box<dyn std::error::Error>> {
+    println!("进入转换程序");
+
+    let mut output = process::Command::new(src_path);
     if unsafe {IS_FOLDER}{
-        file_folder_arg = format!("-d {} -r",ncm_path_total); // 转换ncm文件夹 开启递归,转换整个文件夹内的所有文件
-    }else {
-        file_folder_arg = format!("{}",ncm_path_total); // 转换ncm文件
+         output.arg("-d") //文件夹
+        .arg(&ncm_path[0]) //文件夹参数只有一个
+       .arg("-r"); //递归
+        
+    }else{
+        for i in ncm_path{
+            output.arg(i); //多个文件
+        }
     }
-    return (file_folder_arg,safe_args);
+    if safe_choice == 1 {
+        output.arg("-o").arg(getConfigMap().get("path").unwrap()); //设定保存路径
+    }
+    println!("转换中，请等待...");
+    let output=output.output()?;
+    //     .arg(file_folder_arg)
+    //     .arg(safe_args)
+    //     .output()
+    //     .expect("执行转换指令错误");
+
+    // println!("{:?}", String::from_utf8(output.stdout).unwrap());
+    println!("转换完成");
+    return Ok(());
 }
