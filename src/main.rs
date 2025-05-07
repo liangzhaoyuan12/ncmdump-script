@@ -28,7 +28,7 @@ fn init() {
     println!("支持列表：\n1.Linux_x64 2.Windows_x64 3.MacOS_x64 4.MacOS_arm64");
     let os = std::env::consts::OS;
     let arch = std::env::consts::ARCH;
-    if !(os == "linux" && arch == "x86_64" || os == "windows" && arch == "x86_64"){
+    if !(os == "linux" && arch == "x86_64" || os == "windows" && arch == "x86_64" || os == "macos"){
         eprintln!("当前系统不支持，请更换系统或架构");
         println!("按任意键退出");
         stdin().read_line(&mut String::new()).unwrap();

@@ -90,7 +90,7 @@ fn file_dump_sys(safe_choice: u8,ncm_path:Vec<PathBuf>) {
     dump(src_path, ncm_path,safe_choice).expect("error");
 
 }
-#[cfg(all(target_os = "linux", target_os = "macos"))]
+#[cfg(any(target_os = "linux", target_os = "macos"))]
 fn unix_add_execute_permission(absolute_path: &PathBuf) ->Result<(),Box<dyn std::error::Error>>
 // where E:From<std::io::Error> + From<String>
 {
